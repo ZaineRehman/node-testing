@@ -2,17 +2,15 @@
 #include <chrono>
 #include <vector>
 #include <windows.h>
-
 #include <SDL.h>
 #undef main
-
-#include "render.hpp"
-#include "implementations.hpp"
+#include "render_.hpp"
+#include "implementations_.hpp"
 #include "additions.hpp"
 
-int main()
-{	
+int main() {
 	N_SDLSETUP();
+	srand(time(0));
 
 	SDL_Event event;
 	bool looping = true;
@@ -20,7 +18,6 @@ int main()
 	clock_t timeOld = clock();
 	clock_t timeNew = clock();
 	float deltaTime = 0;
-	srand(clock());
 	bool doneDrawing = false;
 
 	N_RENDER Renderer {N_WINDOW, N_RENDERER};
@@ -45,9 +42,9 @@ int main()
 				mouseX,
 				mouseY,
 				(uint16_t)N_NODES.size(),
-				10,
 				false,
-				{155,155,155}
+				{155,155,155},
+				10
 			};
 			N_NODES.push_back(temp);
 			N_NODEAMOUNT++;
@@ -104,7 +101,7 @@ int main()
 			// reset nodes
 			case SDLK_KP_9:
 				N_NODEDELAY += N_NODEDELAYSTEP;
-				resetNodes();
+				//resetNodes();
 				calcNodes();
 				doneDrawing = false;
 				break;
@@ -114,7 +111,7 @@ int main()
 			case SDLK_KP_6:
 				if (N_NODEDELAY - N_NODEDELAYSTEP < 0) N_NODEDELAY = 0;
 				else N_NODEDELAY -= N_NODEDELAYSTEP;
-				resetNodes();
+				//resetNodes();
 				calcNodes();
 				doneDrawing = false;
 				break;
@@ -126,22 +123,11 @@ int main()
 				resetNodes();
 				calcNodes();
 				break;
-			
-			case SDLK_1: if (nodeShow.size() >= 1)  nodeShow[0] = !nodeShow[0]; break;
-			case SDLK_2: if (nodeShow.size() >= 2)  nodeShow[1] = !nodeShow[1]; break;
-			case SDLK_3: if (nodeShow.size() >= 3)  nodeShow[2] = !nodeShow[2]; break;
-			case SDLK_4: if (nodeShow.size() >= 4)  nodeShow[3] = !nodeShow[3]; break;
-			case SDLK_5: if (nodeShow.size() >= 5)  nodeShow[4] = !nodeShow[4]; break;
-			case SDLK_6: if (nodeShow.size() >= 6)  nodeShow[5] = !nodeShow[5]; break;
-			case SDLK_7: if (nodeShow.size() >= 7)  nodeShow[6] = !nodeShow[6]; break;
-			case SDLK_8: if (nodeShow.size() >= 8)  nodeShow[7] = !nodeShow[7]; break;
-			case SDLK_9: if (nodeShow.size() >= 9)  nodeShow[8] = !nodeShow[8]; break;
-			case SDLK_0: if (nodeShow.size() >= 10) nodeShow[9] = !nodeShow[9]; break;
 			}
 		}
 		
 		// render nodes
-		for (Node i : N_NODES) {
+		for (auto i : N_NODES) {
 			Renderer.blitCircle(
 				i.X,
 				i.Y,i.radius,
@@ -153,28 +139,24 @@ int main()
 		uint16_t tempC = 0;
 		for (uint16_t B = 0; B < nodeConnections.size(); ++B) {
 			if (tempC >= Colors::list.size()) tempC = 0;
-			if (nodeShow[B]) {
-				for (uint16_t j = 0; j < nodeConnections[B].size(); ++j) {
-					// make sure the node isnt the last element
-					if (j == (nodeConnections[B].size() - 1)) break;
+			for (uint16_t j = 0; j < nodeConnections[B].size(); ++j) {
+				// make sure the node isnt the last element
+				if (j == (nodeConnections[B].size() - 1)) break;
 
-					uint16_t nodeIndex = findId(nodeConnections[B][j]);
+				uint16_t nodeIndex = findId(nodeConnections[B][j]);
 
-					Node temp1 = N_NODES[findId(nodeConnections[B][j])];
-					Node temp2 = N_NODES[findId(nodeConnections[B][j+1])];
+				Node temp1 = N_NODES[findId(nodeConnections[B][j  ])];
+				Node temp2 = N_NODES[findId(nodeConnections[B][j+1])];
 
-					float offset = B;
-
-					Renderer.blitLine(
-						{temp1.X+offset, temp1.Y+offset},
-						{temp2.X+offset, temp2.Y+offset},
-						Colors::list[tempC],
-						1
-					);
-					if (N_NODEDELAY && !doneDrawing) {
-						Sleep(N_NODEDELAY);
-						SDL_RenderPresent(N_RENDERER);
-					}
+				Renderer.blitLine(
+					{temp1.X+B, temp1.Y+B},
+					{temp2.X+B, temp2.Y+B},
+					Colors::list[tempC],
+					1
+				);
+				if (N_NODEDELAY && !doneDrawing) {
+					Sleep(N_NODEDELAY);
+					SDL_RenderPresent(N_RENDERER);
 				}
 			}
 			tempC++;
